@@ -45,10 +45,10 @@ precise virtual-screen \
     --pdb-path ./example/3WBB.pdb \
     --output-dir results/ \
     --center-sdf ./example/3WBB_NAP.sdf \
-    --db-path zinc.db \
     --search-mode wide \
     --no-codes-to-consider 500 \
     --no-smiles-per-codes 100
+# --db-path zinc.db 
 
 # Example with coordinates:
 precise virtual-screen \
@@ -57,5 +57,5 @@ precise virtual-screen \
     --center-x 10.5 \
     --center-y 20.3 \
     --center-z 15.7 \
-    --db-path zinc.db
+# --db-path zinc.db
 ```
