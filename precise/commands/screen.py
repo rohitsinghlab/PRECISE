@@ -5,11 +5,12 @@ from typing import List
 
 import typer
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from typing_extensions import Annotated
 
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -201,6 +202,58 @@ def get_smiles_clusters_and_dock(
     return smiles_df
 
 
+def download_zinc_database(target_path: Path, console: Console) -> Path:
+    import requests
+    from precise.utils.constants import ZINC_DOWNLOAD_URL
+
+    target_path = Path(target_path).expanduser().resolve()
+    target_path.mkdir(parents=True, exist_ok=True)
+
+    db_file = target_path / "zincv2.db"
+
+    if db_file.exists():
+        console.print(f"[yellow]Database already exists at {db_file}[/yellow]")
+        return db_file
+
+    console.print(f"[cyan]Downloading ZINC database to {db_file}...[/cyan]")
+    console.print(
+        "[dim]This may take several minutes depending on your connection.[/dim]"
+    )
+
+    try:
+        response = requests.get(ZINC_DOWNLOAD_URL, stream=True)
+        response.raise_for_status()
+
+        total_size = int(response.headers.get("content-length", 0))
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task(
+                f"Downloading... ({total_size / (1024**3):.2f} GB)"
+                if total_size
+                else "Downloading...",
+                total=total_size,
+            )
+
+            with open(db_file, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        progress.update(task, advance=len(chunk))
+
+        console.print(f"[green]✓ Database downloaded successfully to {db_file}[/green]")
+        return db_file
+
+    except Exception as e:
+        console.print(f"[red]Error downloading database: {e}[/red]")
+        if db_file.exists():
+            db_file.unlink()  # Clean up partial download
+        raise
+
+
 def run_virtual_screen(
     pdb_path: str,
     output_dir: str,
@@ -343,15 +396,13 @@ def register_command(app: typer.Typer, console: Console):
         db_path: Annotated[
             Path,
             typer.Option(
-                help="Path to ZINC/Enamine DuckDB database",
-                exists=True,
+                help="Path to ZINC/Enamine DuckDB database (will prompt to download if not provided)",
+                exists=False,
                 file_okay=True,
                 dir_okay=False,
                 resolve_path=True,
             ),
-        ] = Path(
-            "/hpc/group/singhlab/user/me196/projects/moleculerep/data/dbs/zincv2.db"
-        ),
+        ] = None,
         dist_thres: Annotated[
             float, typer.Option(help="Clustering distance threshold")
         ] = 0.7,
@@ -433,6 +484,37 @@ def register_command(app: typer.Typer, console: Console):
             str(precise_chpt) if precise_chpt else None
         )
 
+        # Handle missing database path
+        if db_path is None:
+            console.print(
+                "[yellow]No database path provided. ZINC database is required for screening.[/yellow]"
+            )
+            should_download = typer.confirm(
+                "Would you like to download the ZINC database now?", default=True
+            )
+
+            if not should_download:
+                console.print("[red]Cannot proceed without a database. Exiting.[/red]")
+                raise typer.Exit(code=1)
+
+            default_db_location = "~/.precise/zinc/"
+            db_location = typer.prompt(
+                "Enter installation directory",
+                default=default_db_location,
+                show_default=True,
+            )
+
+            try:
+                db_path = download_zinc_database(Path(db_location), console)
+            except Exception as e:
+                console.print(f"[red]Failed to download database: {e}[/red]")
+                raise typer.Exit(code=1)
+        else:
+            # Validate that the provided db_path exists
+            if not db_path.exists():
+                console.print(f"[red]Error: Database file not found: {db_path}[/red]")
+                raise typer.Exit(code=1)
+
         console.print("[cyan]Starting virtual screening pipeline...[/cyan]")
         console.print(f"  Receptor: {pdb_path}")
         console.print(f"  Output: {output_dir}")
@@ -440,6 +522,7 @@ def register_command(app: typer.Typer, console: Console):
             console.print(f"  Center: {center_sdf}")
         else:
             console.print(f"  Center: ({center_x}, {center_y}, {center_z})")
+        console.print(f"  Database: {db_path}")
         console.print(f"  Checkpoint: {final_checkpoint_path}")
         console.print(f"  Search mode: {search_mode}")
         console.print(f"  Ligand embedding: {ligand_embedding}")

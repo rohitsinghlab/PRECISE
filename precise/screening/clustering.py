@@ -309,11 +309,15 @@ def build_visualization_layout(
 
     info_content = Group(spinner, progress_text)
 
+    # Set a consistent max height for both panels
+    max_panel_height = 25
+
     info_panel = Panel(
         info_content,
         title="Search Progress",
         border_style="magenta",
         padding=(1, 2),
+        height=max_panel_height,
     )
 
     leaderboard_panel = Panel(
@@ -321,6 +325,7 @@ def build_visualization_layout(
         title="Top Scoring Molecules",
         border_style="green",
         padding=(1, 2),
+        height=max_panel_height,
     )
 
     return Columns([info_panel, leaderboard_panel], equal=False, expand=True)

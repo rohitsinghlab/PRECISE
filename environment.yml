@@ -42,5 +42,6 @@ dependencies:
     - einops
     - omegaconf
     - pdb2pqr
+    - duckdb
     - gemmi
     - meeko
