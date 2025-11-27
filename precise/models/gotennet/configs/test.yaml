@@ -1,0 +1,47 @@
+# @package _global_
+
+# specify here default evaluation configuration
+defaults:
+  - _self_
+  - datamodule: qm9.yaml
+  - model: gotennet.yaml
+  - callbacks: default.yaml
+  - logger: default.yaml
+  - trainer: default.yaml
+
+  # experiment configs allow for version control of specific configurations
+  # e.g. best hyperparameters for each combination of model and datamodule
+  - experiment: null
+
+  # config for hyperparameter optimization
+  - hparams_search: null
+
+  # optional local config for machine/user specific settings
+  # it's optional since it doesn't need to exist and is excluded from version control
+  - optional local: default.yaml
+
+  # enable color logging
+  - paths: default.yaml
+  - hydra: default.yaml
+#  - override /hydra/launcher: joblib
+
+original_work_dir: ${hydra:runtime.cwd}
+
+data_dir: ${original_work_dir}/data/
+
+print_config: True
+
+ignore_warnings: True
+
+seed: 42
+# default name for the experiment, determines logging folder path
+# (you can overwrite this name in experiment configs)
+name: "default"
+task: "QM9"
+exp: False
+project: "gotennet"
+label: -1
+label_str: -1
+# passing checkpoint path is necessary
+ckpt_path: null
+checkpoint: null

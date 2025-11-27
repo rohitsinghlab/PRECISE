@@ -1,0 +1,44 @@
+name: precise
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  - python=3.10
+  - openbabel=3.1.1
+  - reduce
+  - numpy
+  - pip
+  - unidock
+  
+  - pip:
+    - torch==2.5.1
+    - torchvision==0.20.1
+    - torchaudio==2.5.1
+    - pytorch-lightning==2.5.6
+    - biopython
+    - biotite
+    - rdkit
+    - datamol
+    - molfeat
+    - prody
+    - fair-esm
+    - e3nn
+    - pandas
+    - scipy
+    - scikit-learn
+    - matplotlib
+    - lmdb
+    - tqdm
+    - pyyaml
+    - transformers
+    - timm
+    - pyvista
+    - plyfile
+    - trimesh
+    - pymeshlab==2023.12.post3
+    - einops
+    - omegaconf
+    - pdb2pqr
