@@ -93,7 +93,10 @@ def cluster_and_score_per_level(
 
             for d in [d0, d1]:
                 if is_leaf(d) and d not in score_assignment_dict:
-                    score_assignment_dict[d] = (d, scoring_func(d))
+                    score                    = scoring_func(d)
+                    if np.isnan(score):
+                        score = B_MAX
+                    score_assignment_dict[d] = (d, score)
                 else:
                     desc = get_all_children(Z, [d])
                     assert len(desc) > 0, "Non-leaf node must have children"
@@ -107,7 +110,7 @@ def cluster_and_score_per_level(
                     else:
                         score = score_assignment_dict[leaf][1]
 
-                    if np.isnan(score):
+                    if np.isnan(score) or score is None:
                         score = B_MAX
 
                     assert d in ancestors_leaf_to_d, "Path must contain ancestor"
@@ -156,6 +159,20 @@ def cluster_and_score(
             live_context.start()
 
         while len(nlist) != 0:
+            # go through the depth
+            level_start_time = time.time()
+            
+            nlist = cluster_and_score_per_level(
+                Z,
+                scoring_func,
+                filtering_func,
+                nlist,
+                score_assignment_dict,
+                depth,
+                csize_thres,
+                B_MAX,
+            )
+            
             if verbose:
                 depth += 1
 
@@ -182,18 +199,7 @@ def cluster_and_score(
                         console.print(layout)
                         console.print()
 
-            level_start_time = time.time()
 
-            nlist = cluster_and_score_per_level(
-                Z,
-                scoring_func,
-                filtering_func,
-                nlist,
-                score_assignment_dict,
-                depth,
-                csize_thres,
-                B_MAX,
-            )
 
             if level_start_time:
                 level_times.append(time.time() - level_start_time)
@@ -240,7 +246,8 @@ def build_visualization_layout(
 
     total_scored = sum(1 for k, v in score_assignment_dict.items() if k == v[0])
 
-    scored_mols = [(k, v[1]) for k, v in score_assignment_dict.items() if k == v[0]]
+    scored_mols = [(k, v[1]) for k, v in score_assignment_dict.items() if k == v[0] 
+                   and not(np.isnan(v[1]))]
     top_mols = sorted(scored_mols, key=lambda x: x[1])[:10]
 
     leaderboard_lines = []
@@ -277,9 +284,8 @@ def build_visualization_layout(
     if scored_mols:
         scores = [s for _, s in scored_mols]
         best_score = min(scores)
-        avg_score = sum(scores) / len(scores)
         score_stats = (
-            f"[bold]Best:[/bold] {best_score:.2f}  [bold]Avg:[/bold] {avg_score:.2f}"
+            f"[bold]Best:[/bold] {best_score:.2f}"
         )
     else:
         score_stats = "[dim]No scores yet[/dim]"

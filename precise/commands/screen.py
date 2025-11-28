@@ -50,7 +50,7 @@ def slack_func(depth: int, mode: str = "wide") -> float:
     depth = min(depth, len_ - 1)
     if mode == "wide":
         return wide_slack[depth]
-    else:
+    elif mode == "shallow":
         return thin_slack[depth]
 
 
@@ -415,7 +415,7 @@ def register_command(app: typer.Typer, console: Console):
         search_mode: Annotated[
             str,
             typer.Option(
-                help="Search strategy: 'wide' for broader exploration, 'thin' for focused search"
+                help="Search strategy: 'wide' for broader exploration, 'shallow' for focused search"
             ),
         ] = "wide",
         no_codes_to_consider: Annotated[
