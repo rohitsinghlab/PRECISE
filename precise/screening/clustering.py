@@ -87,7 +87,10 @@ def cluster_and_score_per_level(
         if len(leaf_descendents) <= csize_thres:
             for leaf in leaf_descendents:
                 if leaf not in score_assignment_dict:
-                    score_assignment_dict[leaf] = (leaf, scoring_func(leaf))
+                    score                       = scoring_func(leaf)
+                    if np.isnan(score):
+                        score = B_MAX
+                    score_assignment_dict[leaf] = (leaf, score)
         else:
             d0, d1 = dcmap["immediate"]
 
