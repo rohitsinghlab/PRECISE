@@ -39,21 +39,38 @@ precise install-tools
 
 At a high level, PRECISE gives users access to three main interfaces:
 1. **Surface tool**: for constructing protein surfaces from protein structural input (PDB). It can also compute surfaces of PDBs representing protein multimers; these surface representations are responsive to PTMs and other non-polymeric entities like metalloproteins.
-2. **Pocket detection tool**:
+2. **Pocket detection tool**: which accepts a protein structure and a ligand, and identifies surface regions which PRECISE infers to be the most likely binding locations (ligand-based pocket detection). As in 1, it can accept composite structues like multimers and structures with PTMs.
+3. **Ligand screening tool**: which accepts a protein structure, the site in the protein structure to target, and a **ligand database**, returning a set of SMILES, enriched for Vina docking scores, that PRECISE predicts as possible site-specific binding candidates.   
 
-
-Here are some examples of how to use our tools:
+#### Create surface
+After running the `precise install-tools` command, users are then able to generate surface meshes with added physicochemical properties. The following command lets user to construct surfaces from a specific chain:
 ```
-# If you want to calculate the surface of a single chain protein
 precise create-surface --chain-id A --pdb-path ./example/2QCS.pdb
-
-# If you want to calculate the surface of a multi-chain protein
+```
+For multi-chain surface construction, the `--chain-id` parameter can be updated the following way:
+```
 precise create-surface --chain-id A,B --pdb-path ./example/2QCS.pdb
+```
+This will return the protein surface in the form of a `ply` file at the location [MERT TODO]
 
-# For the pocket detect function
-precise detect-pockets --pdb-path ./example/3WBB.pdb --smiles 'CCO'
 
-# For the virtual screening function
+#### Detecting pockets
+Given a protein PDB and a ligand SMILE, the users can identify PRECISE-inferred high likelihood binding locations using the following command:
+```
+precision detect-pockets --pdb-path ./example/3WBB.pdb --smiles 'CCO'
+```
+The output is in the form of a `json` file, which is returned at the [MERT TODO] location. 
+
+This interface also gives users the ability to visualize PRECISE predictions at every surface patch regions, through a surface ply file, by adding a `--visualize` option. The output `ply` file containing the PRECISE surface predictions are saved at [MERT TODO] locations.
+```
+precision detect-pockets --pdb-path ./example/3WBB.pdb --smiles 'CCO' --visualize
+```
+
+#### Ligand Database screening
+
+Finally, PRECISE lets users screen for a potential site-specific binding tagets against ligand databases using the `virtual-screen` interface. The protein structure information is passed through a PDB file, while the site information can be provided either through exact coordinate information or through a SDF file. 
+
+```
 # Example with SDF:
 precise virtual-screen \
     --pdb-path ./example/3WBB.pdb \
@@ -62,7 +79,7 @@ precise virtual-screen \
     --search-mode wide \
     --no-codes-to-consider 500 \
     --no-smiles-per-codes 100
-# --db-path zinc.db 
+    --db-path zinc.db 
 
 # Example with coordinates:
 precise virtual-screen \
@@ -71,5 +88,11 @@ precise virtual-screen \
     --center-x 10.5 \
     --center-y 20.3 \
     --center-z 15.7 \
-# --db-path zinc.db
+    --db-path zinc.db
 ```
+If the `--db-path` is not set, this interface prompts the user if they want to download the ZINC(250M) database from huggingface. Once the file is downloaded the location can be used again to prevent re-downloading. 
+
+Currently, we can perform virtual screening in two modes:
+1. `wide`: which lets us explore more of the ligand tree, incurring larger computational docking costs (but ligand candidates enriched with better Vina docking scores)
+2. `shallow`: which limits exploration but has lower computational docking costs.
+
