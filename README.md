@@ -36,11 +36,15 @@ For each surface-mesh vertex, PRECISE computes four key physicochemical properti
 3. **Surface electrostatics**
 4. **Shape index** (local curvature)
 
-![Four Features](assets/features.png)
+<p align="center">
+  <img src="assets/features.png" alt="Four Features" style="background-color: white; padding: 20px;">
+</p>
 
 Ligand discretization is performed using **CoNCISE** (Erden et al., 2024), enabling efficient screening of entire ligand libraries at scale.
 
-![Detailed description of PRECISE architecture and inputs](assets/main_idea.png)
+<p align="center">
+  <img src="assets/main_idea.png" alt="Detailed description of PRECISE architecture and inputs" style="background-color: white; padding: 20px;">
+</p>
 
 
 ## Paper and Citation
