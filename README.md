@@ -37,6 +37,11 @@ precise install-tools
 
 ### Usage
 
+At a high level, PRECISE gives users access to three main interfaces:
+1. **Surface tool**: for constructing protein surfaces from protein structural input (PDB). It can also compute surfaces of PDBs representing protein multimers; these surface representations are responsive to PTMs and other non-polymeric entities like metalloproteins.
+2. **Pocket detection tool**:
+
+
 Here are some examples of how to use our tools:
 ```
 # If you want to calculate the surface of a single chain protein
