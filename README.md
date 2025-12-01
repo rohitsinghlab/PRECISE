@@ -5,6 +5,10 @@ Contemporary drug-screening pipelines struggle to perform two operations simulta
 
 In the PRECISE paper, we demonstrate that PRECISE performs on par with state-of-the-art co-folding and ML-based docking approaches in identifying ligand-binding sites. We also show that our screening pipeline, which employs an efficient Markov Chain Tree Search (MCTS) strategy, can capitalize on the scale and chemical diversity of large ligand databases to identify Vina-inferred strong binders while requiring only minimal docking.
 
+### Biorxiv
+
+### Citing PRECISE
+
 ### Getting Started
 
 To install the environment for inference, you need to install via the following codes:
@@ -29,7 +33,7 @@ Also, for the surface calculation, you need to install the tools via the followi
 precise install-tools
 ```
 
-### Examples
+### Usage
 
 Here are some examples of how to use our tools:
 ```
