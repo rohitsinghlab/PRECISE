@@ -68,7 +68,7 @@ precision detect-pockets --pdb-path ./example/3WBB.pdb --smiles 'CCO' --visualiz
 
 #### Ligand Database screening
 
-Finally, PRECISE lets users screen for a potential site-specific binding tagets against ligand databases using the `virtual-screen` interface. The protein structure information is passed through a PDB file, while the site information can be provided either through exact coordinate information or through a SDF file. 
+Finally, PRECISE lets users screen for a potential site-specific binding taget against a ligand database using the `virtual-screen` interface. The protein structure information is passed through a PDB file, while the site information can be provided either through exact coordinate information or through a SDF file. 
 
 ```
 # Example with SDF:
