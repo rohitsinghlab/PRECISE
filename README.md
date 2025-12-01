@@ -96,3 +96,43 @@ Currently, we can perform virtual screening in two modes:
 1. `wide`: which lets us explore more of the ligand tree, incurring larger computational docking costs (but ligand candidates enriched with better Vina docking scores)
 2. `shallow`: which limits exploration but has lower computational docking costs.
 
+
+<!-- LICENSE -->
+## License
+The copyrights of this software are owned by Tufts and Duke Universities. Two licenses for this software are offered:
+
+1. An open-source license under the CC-BY-NC-SA 4.0 license for non-commercial academic use.
+
+2. A custom license with the two universities, for commercial use or uses without the CC-BY-NC-SA 4.0 license restrictions. 
+
+As a recipient of this software, you may choose which license to receive the code under.
+
+To enter a custom license agreement without the CC-BY-NC-SA 4.0 license restrictions, please contact the Digital Innovations department at the Duke Office for Translation & Commercialization (OTC) (https://otc.duke.edu/digital-innovations/#DI-team) at otcquestions@duke.edu.
+
+Please note that this software is distributed AS IS, WITHOUT ANY WARRANTY; and without the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- CONTACT -->
+## Contact
+
+<a href="https://github.com/rohitsinghlab/CoNCISE/graphs/contributors">
+  <img src="https://contributors-img.firebaseapp.com/image?repo=rohitsinghlab/CoNCISE" />
+</a>
+
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[forks-shield]: https://img.shields.io/github/forks/rohitsinghlab/CoNCISE.svg?style=for-the-badge
+[forks-url]: https://github.com/rohitsinghlab/CoNCISE/network/members
+[stars-shield]: https://img.shields.io/github/stars/rohitsinghlab/CoNCISE.svg?style=for-the-badge
+[stars-url]: https://github.com/rohitsinghlab/CoNCISE/stargazers
+[issues-shield]: https://img.shields.io/github/issues/rohitsinghlab/CoNCISE.svg?style=for-the-badge
+[issues-url]: https://github.com/rohitsinghlab/CoNCISE/issues
+[license-shield]: https://img.shields.io/github/license/rohitsinghlab/CoNCISE.svg?style=for-the-badge
+[license-url]: https://github.com/rohitsinghlab/CoNCISE/blob/master/LICENSE
+
