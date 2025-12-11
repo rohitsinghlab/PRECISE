@@ -1,6 +1,7 @@
 import numpy as np
 import os
-from Bio.PDB import *
+from Bio.PDB import PDBParser  # noqa: F401
+from Bio.PDB import *  # noqa: F403
 import trimesh
 from pathlib import Path
 import re
@@ -361,6 +362,84 @@ def process_multimer(
         hphob=vertex_hphobicity,
         iface=iface,
     )
+
+
+def detect_chains(pdb_filename: Path) -> list[str]:
+    """
+    Detect all chain IDs in a PDB file.
+
+    Args:
+        pdb_filename (Path): Path to the input PDB file
+
+    Returns:
+        list[str]: List of unique chain identifiers found in the PDB file
+    """
+    parser = PDBParser(QUIET=True)
+    structure = parser.get_structure("protein", str(pdb_filename))
+
+    chain_ids = []
+    for model in structure:
+        for chain in model:
+            chain_id = chain.get_id()
+            # Skip empty chain IDs and add unique ones
+            if chain_id.strip() and chain_id not in chain_ids:
+                chain_ids.append(chain_id)
+
+    return sorted(chain_ids)
+
+
+def process_protein_auto(
+    pdb_filename: Path,
+    pdb_id: str,
+    chain_id: str | list[str] | None,
+    out_path: Path,
+    protonate_src_loc=None,
+):
+    """
+    Automatically process a protein, detecting whether to use process_protein or process_multimer.
+
+    If chain_id is None, all chains in the PDB will be processed.
+    If a single chain is provided, process_protein is used.
+    If multiple chains are provided (list or comma-separated string), process_multimer is used.
+
+    Args:
+        pdb_filename (Path): Path to the input PDB file
+        pdb_id (str): PDB identifier for naming files
+        chain_id (str | list[str] | None): Chain identifier(s) to process, or None for all chains
+        out_path (Path): Output path for the PLY file with surface and features
+        protonate_src_loc: Source location for protonation
+
+    Returns:
+        None: Saves PLY file with vertices, faces, normals, charges, hbond, hphob, iface
+    """
+    if chain_id is None:
+        chain_ids = detect_chains(pdb_filename)
+        if not chain_ids:
+            raise ValueError(f"No chains found in PDB file: {pdb_filename}")
+    elif isinstance(chain_id, str):
+        if "," in chain_id:
+            chain_ids = [c.strip() for c in chain_id.split(",")]
+        else:
+            chain_ids = [chain_id.strip()]
+    else:
+        chain_ids = chain_id
+
+    if len(chain_ids) == 1:
+        process_protein(
+            pdb_filename=pdb_filename,
+            pdb_id=pdb_id,
+            chain_id=chain_ids[0],
+            out_path=out_path,
+            protonate_src_loc=protonate_src_loc,
+        )
+    else:
+        process_multimer(
+            pdb_filename=pdb_filename,
+            pdb_id=pdb_id,
+            chain_ids=chain_ids,
+            out_path=out_path,
+            protonate_src_loc=protonate_src_loc,
+        )
 
 
 def parse_system_id(system_id: str):

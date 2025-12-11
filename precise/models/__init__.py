@@ -9,7 +9,7 @@ from torch import device as torch_device
 
 
 from rdkit import Chem, DataStructs
-from rdkit.Chem import AllChem
+from rdkit.Chem.rdFingerprintGenerator import GetMorganGenerator
 
 from precise.models.conplex_dti.architectures import SimpleCoembedding
 from precise.models.conplex_dti.featurizer.protein import ProtBertFeaturizer
@@ -88,15 +88,17 @@ def smiles_to_morgan_fingerprints(
     n_bits: int = 2048,
     use_chirality: bool = True,
 ) -> List[torch.Tensor]:
+    generator = GetMorganGenerator(
+        radius=radius, fpSize=n_bits, includeChirality=use_chirality
+    )
+
     fingerprints: List[torch.Tensor] = []
     for idx, smi in enumerate(smiles):
         mol = Chem.MolFromSmiles(smi)
         if mol is None:
             raise ValueError(f"Invalid SMILES at position {idx}: {smi}")
 
-        bit_vect = AllChem.GetMorganFingerprintAsBitVect(
-            mol, radius, nBits=n_bits, useChirality=use_chirality
-        )
+        bit_vect = generator.GetFingerprint(mol)
         np_fp = np.zeros((n_bits,), dtype=np.int8)
         DataStructs.ConvertToNumpyArray(bit_vect, np_fp)
         fingerprints.append(torch.from_numpy(np_fp.astype(np.float32)))
