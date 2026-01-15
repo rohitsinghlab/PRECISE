@@ -50,7 +50,7 @@ Ligand discretization is performed using **CoNCISE** (Erden et al., 2024), enabl
 ## Paper and Citation
 
 ### Preprint
-The PRECISE paper is available on bioRxiv: [Link coming soon]
+The PRECISE paper is available on [bioRxiv](https://www.biorxiv.org/content/10.64898/2026.01.04.697581v1)
 
 ### Citing PRECISE
 If you use PRECISE in your research, please cite:
