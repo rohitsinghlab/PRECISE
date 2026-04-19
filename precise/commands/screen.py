@@ -6,7 +6,9 @@ from typing import List
 import typer
 from rich.console import Console
 from typing_extensions import Annotated
-
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+from functools import partial
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -101,6 +103,18 @@ def compute_surface(
     return rec_item
 
 
+def is_molwt_lt(smiles, moltwt):
+    """
+    Returns True if molecular weight of SMILES is < moltwt, else False.
+    Handles invalid SMILES safely.
+    """
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return False  # or raise ValueError("Invalid SMILES")
+
+    mw = Descriptors.MolWt(mol)
+    return mw < moltwt
+
 def score_pocket_find_best_smiles_codes(
     surface,
     x: float,
@@ -112,6 +126,7 @@ def score_pocket_find_best_smiles_codes(
     smiles_out_csv: str,
     no_codes_to_consider: int,
     no_smiles_per_codes: int,
+    filter_molwt_lt: int
 ):
     import pandas as pd
     from precise.screening.codes import codes_to_smiles, score_pocket
@@ -128,6 +143,11 @@ def score_pocket_find_best_smiles_codes(
 
     smiles_df = pd.read_csv(smiles_out_csv)
     smiles_df["smiles"] = smiles_df["smiles"].astype(str)
+    
+    if filter_molwt_lt > 0: 
+        fcommand = partial(is_molwt_lt, moltwt=filter_molwt_lt)
+        smiles_df = smiles_df.loc[smiles_df["smiles"].apply(fcommand), :].copy()
+    
     return smiles_df
 
 
@@ -219,6 +239,7 @@ def run_virtual_screen(
     no_smiles_per_codes: int = 100,
     max_per_depth: int = 20,
     device: int = 0,
+    filter_molwt_lt: int=2000 # only accept molecules smaller than this
 ) -> None:
     from precise.screening.docking import sdf_center
 
@@ -257,6 +278,7 @@ def run_virtual_screen(
         str(smiles_csv),
         no_codes_to_consider,
         no_smiles_per_codes,
+        filter_molwt_lt
     )
 
     # Step 3: Cluster and dock
@@ -379,6 +401,9 @@ def register_command(app: typer.Typer, console: Console):
             int, typer.Option(help="Maximum nodes to explore per tree depth")
         ] = 20,
         device: Annotated[int, typer.Option(help="GPU device ID")] = 0,
+        filter_molwt_lt: Annotated[
+            int, typer.Option(help="Maximum molecule weight threshold")
+        ] = 2000,
     ):
         """
         Run virtual screening using hierarchical clustering and docking.
@@ -430,6 +455,7 @@ def register_command(app: typer.Typer, console: Console):
             )
             raise typer.Exit(code=1)
 
+        
         # Get checkpoint path (download from HuggingFace if not provided)
         final_checkpoint_path = get_checkpoint_path(
             str(precise_chpt) if precise_chpt else None
@@ -442,6 +468,7 @@ def register_command(app: typer.Typer, console: Console):
             console.print(f"  Center: {center_sdf}")
         else:
             console.print(f"  Center: ({center_x}, {center_y}, {center_z})")
+        console.print(f"  Molecule weight restricted to less than {filter_molwt_lt}")
         console.print(f"  Checkpoint: {final_checkpoint_path}")
         console.print(f"  Search mode: {search_mode}")
         console.print(f"  Ligand embedding: {ligand_embedding}")
@@ -465,6 +492,7 @@ def register_command(app: typer.Typer, console: Console):
                 no_smiles_per_codes=no_smiles_per_codes,
                 max_per_depth=max_per_depth,
                 device=device,
+                filter_molwt_lt=filter_molwt_lt
             )
             console.print("\n[green]Virtual screening completed successfully![/green]")
         except Exception as e:
